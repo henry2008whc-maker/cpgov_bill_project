@@ -15,22 +15,20 @@ nav?.querySelectorAll('a').forEach((link) => {
 
 document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
 
-const visualGallery = document.querySelector('[data-reveal-gallery]');
+const revealGroups = [...document.querySelectorAll('[data-reveal-group]')];
 
-if (visualGallery) {
-  const visualCards = [...visualGallery.querySelectorAll('figure')];
+if (revealGroups.length && 'IntersectionObserver' in window) {
+  revealGroups.forEach((group) => group.classList.add('reveal-ready'));
 
-  if ('IntersectionObserver' in window) {
-    visualGallery.classList.add('reveal-ready');
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.18, rootMargin: '0px 0px -10% 0px' });
 
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.18, rootMargin: '0px 0px -10% 0px' });
-
-    visualCards.forEach((card) => revealObserver.observe(card));
-  }
+  revealGroups.forEach((group) => {
+    group.querySelectorAll('[data-reveal-item]').forEach((item) => revealObserver.observe(item));
+  });
 }
